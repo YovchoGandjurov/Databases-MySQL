@@ -87,13 +87,23 @@ FROM users
 ORDER BY email_provider, user_name;
 
 
+#14. Get Users with IP Address Like Pattern
+SELECT user_name, ip_address
+FROM users
+WHERE ip_address LIKE '___.1%.%.___'
+ORDER BY user_name;
+
+#15. Show All Games with Duration and Part of the Day
+SELECT 
+	name AS game,
+    IF(HOUR(start) >= 0 AND HOUR(start) < 12, 'Morning', IF(HOUR(start) >= 12 AND HOUR(start) < 18, 'Afternoon', 'Evening')) AS part_of_the_day ,
+	IF(duration < 4, 'Extra Short', IF(duration BETWEEN 3 AND 6, 'Short', IF(duration BETWEEN 6 and 10, 'Long', 'Extra Long'))) AS duration
+FROM games;
 
 
+USE orders;
 
-
-
-
-
+#16. Orders Table
 
 
 
