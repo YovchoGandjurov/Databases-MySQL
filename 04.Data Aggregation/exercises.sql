@@ -109,50 +109,94 @@ GROUP BY department_id
 ORDER BY department_id;
 
 
+#14. Employees Average Salaries
+CREATE TABLE highest_paid_employees 
+SELECT * FROM employees
+WHERE salary > 30000;
+
+DELETE FROM highest_paid_employees
+WHERE manager_id = 42;
+
+UPDATE highest_paid_employees
+SET salary = salary + 5000
+WHERE department_id = 1;
+
+SELECT department_id, AVG(salary) AS avg_salary
+FROM highest_paid_employees
+GROUP BY department_id
+ORDER BY department_id;
+
+
+#15. Employees Maximum Salaries
+SELECT department_id, MAX(salary) AS max_salary
+FROM employees
+GROUP BY department_id
+HAVING max_salary NOT BETWEEN 30000 AND 70000
+ORDER BY department_id;
+
+
+#16. Employees Count Salaries
+SELECT COUNT(salary) AS salaries_without_manager
+FROM employees
+WHERE manager_id IS NULL;
+
+
+#17. 3rd Highest Salary*
+SET @pk1 = '';
+SET @rn1 = 1;
+
+CREATE VIEW highest_salary AS
+SELECT  department_id,
+        salary,
+        row_number
+FROM (
+  SELECT  department_id,
+          salary,
+          @rn1 := if(@pk1=department_id, @rn1+1,1) as row_number,
+          @pk1 := department_id
+               
+  FROM (
+    SELECT  department_id,
+            salary
+    FROM    employees
+    ORDER BY department_id, salary DESC
+  ) A
+) B;
+
+SELECT department_id, salary
+FROM highest_salary
+WHERE row_number = 3;
+
+
+#17_2. 3rd Highest Salary*
+SELECT 
+	department_id,
+    (SELECT DISTINCT e2.salary
+        FROM employees AS e2
+        WHERE e2.department_id = e1.department_id
+        ORDER BY e2.salary DESC
+        LIMIT 2 , 1) AS third_highest_salary
+FROM employees AS e1
+GROUP BY department_id
+HAVING third_highest_salary IS NOT NULL;
 
 
 
+#18. Salary Challenge**
+SELECT em.first_name, em.last_name, em.department_id
+FROM employees AS em
+JOIN
+	(SELECT e.department_id, AVG(e.salary) AS avg_salary
+	FROM employees AS e
+	GROUP BY e.department_id) AS avg_salaries
+ON em.department_id = avg_salaries.department_id
+WHERE em.salary > avg_salaries.avg_salary
+ORDER BY em.department_id
+LIMIT 10;
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+#19. Departments Total Salaries
+SELECT department_id, SUM(salary) AS total_salay
+FROM employees
+GROUP BY department_id
+ORDER BY department_id;
