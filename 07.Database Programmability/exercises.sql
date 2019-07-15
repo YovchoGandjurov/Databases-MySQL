@@ -223,18 +223,44 @@ END $$
 
 
 
+#15. Log Accounts Trigger
+
+DELIMITER $$
+CREATE TABLE logs (
+	log_id INT PRIMARY KEY AUTO_INCREMENT,
+    account_id INT,
+    old_sum DECIMAL(19, 4),
+    new_sum DECIMAL(19, 4)
+);
+
+CREATE TRIGGER tr_updated_balance
+AFTER UPDATE
+ON accounts
+FOR EACH ROW
+BEGIN
+	INSERT INTO logs (account_id, old_sum, new_sum)
+    VALUES (OLD.id, OLD.balance, NEW.balance);
+END; $$
 
 
 
+# 16. Emails Trigger
 
+CREATE TABLE notification_emails (
+	id INT PRIMARY KEY AUTO_INCREMENT,
+    recipient INT,
+    subject VARCHAR(50),
+    body VARCHAR(255)
+);
 
-
-
-
-
-
-
-
-
-
-
+DELIMITER $$
+CREATE TRIGGER `tr_notification_emails`
+AFTER INSERT ON `logs`
+FOR EACH ROW
+BEGIN
+	INSERT INTO `notification_emails` (`recipient`, `subject`, `body`)
+    VALUES (
+		NEW.account_id,
+        CONCAT('Balance change for account: ', NEW.account_id),
+        CONCAT('On ', DATE_FORMAT(NOW(), '%b %e %Y at %r'), ' your balance was changed from ', NEW.old_sum, ' to ', NEW.new_sum, '.'));
+END; $$
