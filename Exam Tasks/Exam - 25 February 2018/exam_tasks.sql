@@ -98,26 +98,67 @@ WHERE id NOT IN (
 );
 
 
+#05. Users
+SELECT id, username FROM users
+ORDER BY id;
 
 
+#06. Lucky Numbers
+SELECT repository_id, contributor_id
+FROM repositories_contributors
+WHERE repository_id = contributor_id
+ORDER BY repository_id;
 
 
+#07. Heavy HTML
+SELECT id, name, size
+FROM files
+WHERE size > 1000 AND name LIKE '%html'
+ORDER BY size DESC;
 
 
+#08. Issues and Users
+SELECT i.id, CONCAT(u.username, ' : ', i.title) AS issue_assignee
+FROM issues i
+JOIN users u
+ON i.assignee_id = u.id
+ORDER BY i.id DESC;
 
 
+#09. Non-Directory Files
+SELECT f2.id, f2.name AS Name, CONCAT(f2.size, 'KB') AS size
+FROM files f1
+RIGHT JOIN files f2
+ON f1.parent_id = f2.id
+WHERE f1.id IS NULL
+ORDER BY f2.id;
 
 
+#10. Active Repositories
+SELECT r.id, r.name, COUNT(i.repository_id) AS issues
+FROM repositories r
+JOIN issues i
+ON r.id = i.repository_id
+GROUP BY r.name
+ORDER BY issues DESC, r.id
+LIMIT 5;
 
 
+#11. Most Contributed Repository
 
-
-
-
-
-
-
-
+SELECT
+	r.id,
+    r.name,
+    (SELECT COUNT(*) FROM commits WHERE commits.repository_id = r.id) AS commits,
+    COUNT(rc.repository_id) AS contributors
+FROM users u
+JOIN repositories_contributors rc
+ON u.id = rc.contributor_id
+JOIN repositories r
+ON rc.repository_id = r.id
+GROUP BY r.name
+ORDER BY contributors DESC, r.id
+LIMIT 1;
 
 
 
