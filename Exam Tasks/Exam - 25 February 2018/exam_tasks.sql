@@ -161,16 +161,43 @@ ORDER BY contributors DESC, r.id
 LIMIT 1;
 
 
+#12. Fixing My Own Problems
+SELECT
+	u.id,
+    u.username,
+    COUNT(c.id) AS commits
+FROM users u
+
+LEFT JOIN issues i
+ON u.id = i.assignee_id
+
+LEFT JOIN commits c
+ON c.issue_id = i.id AND c.contributor_id = u.id
+
+GROUP BY u.username
+ORDER BY commits DESC, u.id;
 
 
+#13. Recursive Commits
+SELECT
+	SUBSTRING_INDEX(f1.name, '.' , 1) AS file,
+    (SELECT COUNT(*) FROM commits c WHERE message LIKE CONCAT('%',file,'%')) AS recursive_count
+FROM files f1
+JOIN files f2
+ON f1.parent_id = f2.id
+JOIN commits c
+ON f2.commit_id = c.id
+WHERE f1.id = f2.parent_id AND f2.id = f1.parent_id AND f1.id != f1.parent_id
+GROUP BY f1.name;
 
 
-
-
-
-
-
-
+#14. Repositories and Commits
+ SELECT r.id, r.name, COUNT(DISTINCT  c.contributor_id) AS users
+ FROM repositories r
+ LEFT JOIN commits c
+ ON r.id = c.repository_id
+ GROUP BY r.id
+ ORDER BY users DESC, r.id ASC;
 
 
 
